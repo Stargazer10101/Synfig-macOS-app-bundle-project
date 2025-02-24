@@ -1,0 +1,1 @@
+# Synfig-macOS-app-bundle-project
