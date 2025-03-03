@@ -28,7 +28,7 @@ cd Synfig-macOS-app-bundle-project
 
 ## Usage
 ```sh
-python3 prototype_script.py /path/to/SynfigStudio/bimary #usually /Applications/SynfigStudio.app/Contents/MacOS/SynfigStudio
+python3 prototype_script.py /path/to/SynfigStudio/binary #usually /Applications/SynfigStudio.app/Contents/MacOS/SynfigStudio
 ```
 ## Contributing
 Contributions are welcome! Please open an issue or submit a pull request.
