@@ -28,7 +28,11 @@ cd Synfig-macOS-app-bundle-project
 
 ## Usage
 ```sh
-python3 prototype_script.py /path/to/SynfigStudio/binary #usually /Applications/SynfigStudio.app/Contents/MacOS/SynfigStudio
+# For dependencies_script_1
+python3 dependencies_script_1.py /path/to/SynfigStudio/binary # usually /Applications/SynfigStudio.app/Contents/MacOS/SynfigStudio
+
+# For dependencies_script_2
+python3 dependencies_script_2.py /path/to/SynfigStudio.app # usually /Applications/SynfigStudio.app
 ```
 ## Contributing
 Contributions are welcome! Please open an issue or submit a pull request.
