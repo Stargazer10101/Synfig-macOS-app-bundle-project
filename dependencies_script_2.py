@@ -39,8 +39,10 @@ def find_binaries(app_folder):
                 binaries.append(file_path)
     return binaries 
 
+'''
 def copy_dependency(lib_path, app_bundle_path):
     #Determine if it's a framework or dylib
+
     if ".framework" in lib_path:
         # Extract framework name
         framework_name = os.path.basename(os.path.dirname(lib_path.split(".framework")[0] + ".framework"))
@@ -61,12 +63,76 @@ def copy_dependency(lib_path, app_bundle_path):
         # COpy the library
         if not os.path.exists(dest_path):
             shutil.copy2(lib_path, dest_path)
-            
+        
     return dest_path
+    '''
+def is_synfig_internal_lib(lib_path):
+    """Check if this is an internalSynfig library from the build."""
+    return 'libsynfig' in lib_path or 'libsynfigapp' in lib_path or 'libsynfigcore' in lib_path
+
+def resolve_library_path(lib_path):
+   """Resolve symlinks and ensure we get the actual library file.""" 
+   # Check if path exists
+
+
 def fix_library_paths(binary_path, app_bundle_path):
     # Get dependencies
-    dependencies = get
-
+    dependencies = get_dependencies(binary_path)
+    
+    for lib_path in dependencies:
+        if is_system_library(lib_path):
+            continue  # skip system libraries
+        
+        # Try to resolve the path (for logging purposes)
+        resolved_path = resolve_library_path(lib_path)
+        if not os.path.exists(resolved_path):
+            logging.warning(f"Dependency not found: {lib_path}")
+            continue
+        
+        #Determine new path in the bundle
+        if ".framework" in lib_path:
+            # Handle frameworks
+            # Extract framework name
+            framework_name = os.path.basename(os.path.dirname(lib_path.split(".framework")[0] + ".framework"))
+            dest_dir = os.path.join(app_bundle_path, "Contents", "Frameworks", f"{framework_name}.framework")
+        
+            # Copy entire framework folder if it doesn't exist
+            if not os.path.exists(dest_dir):
+                framework_dir = lib_path.split(framework_name)[0] + framework_name + ".framework"
+                shutil.copytree(framework_dir, dest_dir, symlinks= True)
+        else:
+            lib_name = os.path.basename(lib_path)
+            new_path = f"@executable_path/../Frameworks/{lib_name}"
+        
+        # Update the reference 
+        logging.info(f"Changing {lib_path} to {new_path} in {binary_path}")
+        try:
+            subprocess.run([
+                'install_name_tool',
+                '-change',
+                lib_path,
+                new_path,
+                binary_path,
+            ], check= True)
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to update reference: {e}")
+        
+        # Update the id of the library itself if we're processing it
+        if os.path.basename(binary_path) == os.path.basename(lib_path):
+            try:
+                subprocess.run([
+                    'install_name_tool',
+                    '-id',
+                    new_path,
+                    binary_path
+                ], check= True)
+            except subprocess.CalledProcessError as e:
+                logging.error(f"Failed to update ID: {e})
+            
+            
+            
+            
+l
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage: python script.py <app_folder>")
