@@ -16,6 +16,9 @@ The projects will be completed in parts starting with (but not limited to) the f
 - add python and lxml packaging to .app (with signing)
 
 - interface/menu improvements for more native macOS support
+## Prerequisite
+Synfig installation from source (Github:https://github.com/synfig/synfig ) <br>
+Also check: https://synfig-docs-dev.readthedocs.io/en/latest/building/Building%20Synfig.html
 
 ## Installation
 ```sh
@@ -32,5 +35,8 @@ cd Synfig-macOS-app-bundle-project
 # For dependencies_script_2
 python3 dependencies_script_2.py /path/to/synfig.git 
 ```
+If you used **homebrew** during the installation process, you may observe the script return dependencies as follows:
+![Script output](Images/Script_output_1.png)
+
 ## Contributing
 Contributions are welcome! Please open an issue or submit a pull request.
