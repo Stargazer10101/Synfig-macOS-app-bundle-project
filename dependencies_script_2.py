@@ -37,28 +37,8 @@ def find_binaries(app_folder):
             file_path = os.path.join(root, file)
             if os.access(file_path, os.X_OK) and not os.path.isdir(file_path):
                 binaries.append(file_path)
-    return binaries    
+    return binaries 
 
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python script.py <app_folder>")
-        sys.exit(1)
-    app_folder = sys.argv[1]
-    if not os.path.exists(app_folder):
-        print("Error: Application folder not found.")
-        sys.exit(1)
-        
-    binaries = find_binaries(app_folder)
-    all_libs_to_bundle = set()
-    
-    for binary in binaries:
-        libs_to_bundle = filter_non_system_libs(binary)
-        all_libs_to_bundle.update(libs_to_bundle)
-        
-    print("Libraries to bundle:")
-    for lib in sorted(all_libs_to_bundle):
-        print(lib)
-        
 def copy_dependency(lib_path, app_bundle_path):
     #Determine if it's a framework or dylib
     if ".framework" in lib_path:
@@ -83,3 +63,26 @@ def copy_dependency(lib_path, app_bundle_path):
             shutil.copy2(lib_path, dest_path)
             
     return dest_path
+def fix_library_paths(binary_path, app_bundle_path):
+    # Get dependencies
+    dependencies = get
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python script.py <app_folder>")
+        sys.exit(1)
+    app_folder = sys.argv[1]
+    if not os.path.exists(app_folder):
+        print("Error: Application folder not found.")
+        sys.exit(1)
+        
+    binaries = find_binaries(app_folder)
+    all_libs_to_bundle = set()
+    
+    for binary in binaries:
+        libs_to_bundle = filter_non_system_libs(binary)
+        all_libs_to_bundle.update(libs_to_bundle)
+        
+    print("Libraries to bundle:")
+    for lib in sorted(all_libs_to_bundle):
+        print(lib)
