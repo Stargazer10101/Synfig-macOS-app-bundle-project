@@ -4,7 +4,7 @@ import os
 
 def get_dependencies(binary_path):
     
-    #Runs otol -L on the binary and extracts the list of dependencies
+    #Run otool -L on the binary and extracts the list of dependencies
     try:
         output = subprocess.check_output(["otool", "-L", binary_path], text= True)
     except subprocess.CalledProcessError as e:
@@ -58,3 +58,28 @@ if __name__ == "__main__":
     print("Libraries to bundle:")
     for lib in sorted(all_libs_to_bundle):
         print(lib)
+        
+def copy_dependency(lib_path, app_bundle_path):
+    #Determine if it's a framework or dylib
+    if ".framework" in lib_path:
+        # Extract framework name
+        framework_name = os.path.basename(os.path.dirname(lib_path.split(".framework")[0] + ".framework"))
+        dest_dir = os.path.join(app_bundle_path, "Contents", "Frameworks", f"{framework_name}.framework")
+        
+        # Copy entire framework folder if it doesn't exist
+        if not os.path.exists(dest_dir):
+            framework_dir = lib_path.split(framework_name)[0] + framework_name + ".framework"
+            shutil.copytree(framework_dir, dest_dir, symlinks= True)
+    else:
+        # For regular dylibs
+        lib_name= os.path.basename(lib_path)
+        dest_path = os.path.join(app_bundle_path, "Contents", "Frameworks", lib_name)
+        
+        #Create Frameworks directory if it doesn't exist
+        os.makedirs(os.path.dirname(dest_path), exist_ok= True)
+        
+        # COpy the library
+        if not os.path.exists(dest_path):
+            shutil.copy2(lib_path, dest_path)
+            
+    return dest_path
