@@ -4,6 +4,7 @@ import subprocess
 import shutil
 import sys
 
+# Logging
 def setup_logging():
     logging.basicConfig(
         level=logging.INFO,
@@ -15,7 +16,7 @@ def setup_logging():
     )
 
 def get_dependencies(binary_path):
-    #Run otool -L on the binary and extracts the list of dependencies
+    #Runs otool -L on the binary and extracts the list of dependencies
     try:
         output = subprocess.check_output(["otool", "-L", binary_path], text=True)
     except subprocess.CalledProcessError as e:
@@ -51,7 +52,7 @@ def find_binaries(app_folder):
     return binaries
 
 def is_binary_file(file_path):
-    """Check if a file is a Mach-O binary or dylib."""
+    #Check if a file is a Mach-O binary or dylib.
     try:
         # Try to run file command to see if it's a Mach-O file
         result = subprocess.run(
@@ -65,7 +66,7 @@ def is_binary_file(file_path):
         return False
 
 def resolve_library_path(lib_path):
-    """Find the actual path of a library, resolving symlinks and searching common locations."""
+    # Find the actual path of a library, resolving symlinks and searching common locations.
     # Check if path exists directly
     if os.path.exists(lib_path):
         return os.path.realpath(lib_path)
