@@ -32,8 +32,8 @@ cd Synfig-macOS-app-bundle-project
 ## Usage
 ```sh
 
-# For dependencies_script_2
-python3 dependencies_script_2.py /path/to/synfig.git 
+# For dependencies_collection_2
+python3 dependencies_collection_2.py /path/to/SynfigStudio.app 
 ```
 If you used **homebrew** during the installation process, you may observe the script return dependencies as follows:
 ![Script output](Images/Script_output_1.png)
