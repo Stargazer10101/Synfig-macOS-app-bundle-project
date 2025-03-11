@@ -36,6 +36,7 @@ python3 dependencies_collection_2.py /path/to/SynfigStudio.app
 ```
 
 If you used **homebrew** during the installation process, you may observe the script return dependencies as follows:
+
 ![Script output](Images/Script_output_1.png)
 
 ## Usage - dependencies_collection_3.py 
@@ -45,6 +46,7 @@ If you used **homebrew** during the installation process, you may observe the sc
 python3 dependencies_collection_3.py --app /path/to/SynfigStudio.app 
 ```
 The script may run for several minutes and the dependencies will be copied to /Contents/Frameworks/ of the app.
+
 ![copied_dependencies](Images/files_creation_1.png)
 
 ## Contributing
