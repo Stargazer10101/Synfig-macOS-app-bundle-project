@@ -29,8 +29,8 @@ cd Synfig-macOS-app-bundle-project
 ## Usage
 ```sh
 
-# For dependencies_script_2
-python3 dependencies_script_2.py /path/to/synfig.git 
+# For dependencies_collection_2
+python3 dependencies_collection_2.py /path/to/SynfigStudio.app 
 ```
 ## Contributing
 Contributions are welcome! Please open an issue or submit a pull request.
