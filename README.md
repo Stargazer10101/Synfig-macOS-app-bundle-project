@@ -17,7 +17,9 @@ The projects will be completed in parts starting with (but not limited to) the f
 
 - interface/menu improvements for more native macOS support
 ## Prerequisite
+
 SynfigStudio installation (SynfigStudio.app required)
+
 
 ## Installation
 ```sh
@@ -46,6 +48,7 @@ python3 dependencies_collection_3.py --app /path/to/SynfigStudio.app
 ```
 The script may run for several minutes and the dependencies will be copied to /Contents/Frameworks/ of the app.
 ![copied_dependencies](Images/files_creation_1.png)
+
 
 ## Contributing
 Contributions are welcome! Please open an issue or submit a pull request.
