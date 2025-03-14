@@ -64,9 +64,37 @@ def is_binary_file(file_path):
         return "Mach-O" in result.stdout
     except:
         return False
+    
+def resolve_rpath(binary_path, rpath_lib):
+    """Resolve an @rpath reference to an absolute path."""
+    try:
+        # Get the LC_RPATH entries from the binary
+        output = subprocess.check_output(["otool", "-l", binary_path], text=True)
+        rpaths = []
+        for line in output.splitlines():
+            if "path" in line and "LC_RPATH" in line:
+                rpath = line.split()[1]
+                rpaths.append(rpath)
+        
+        # Try to resolve the library using the rpaths
+        for rpath in rpaths:
+            possible_path = os.path.join(rpath, rpath_lib)
+            if os.path.exists(possible_path):
+                return os.path.realpath(possible_path)
+        
+        logging.warning(f"Could not resolve @rpath reference: {rpath_lib}")
+        return None
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Error running otool: {e}")
+        return None    
+
 
 def resolve_library_path(lib_path):
     # Find the actual path of a library, resolving symlinks and searching common locations.
+    
+    if lib_path.startswith("@rpath") and binary_path:
+        return resolve_rpath(binary_path, lib_path)
+    
     # Check if path exists directly
     if os.path.exists(lib_path):
         return os.path.realpath(lib_path)
