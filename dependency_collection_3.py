@@ -5,7 +5,6 @@ import shutil
 import sys
 import argparse
 import re
-from glob import glob
 
 # Logging
 def setup_logging():
@@ -36,15 +35,7 @@ def resolve_rpath(binary_path, rpath_lib):
         output = subprocess.check_output(["otool", "-l", binary_path], text=True)
         rpaths = []
         binary_dir = os.path.dirname(binary_path)
-        app_bundle_root = os.path.join(binary_dir, "..", "..", "..")  # Added
         
-        # Add default app bundle paths
-        default_app_paths = [
-            os.path.join(app_bundle_root, "Frameworks"),
-            os.path.join(app_bundle_root, "Resources", "lib")
-        ]
-        
-        # Existing RPATH processing
         for line in output.splitlines():
             if "path" in line and "LC_RPATH" in line:
                 parts = line.strip().split()
@@ -52,7 +43,7 @@ def resolve_rpath(binary_path, rpath_lib):
                     continue
                 rpath = parts[2]
                 
-                # Expand @loader_path/@executable_path
+                # Expand @loader_path and @executable_path
                 expanded = rpath
                 if "@loader_path" in rpath:
                     expanded = os.path.normpath(rpath.replace("@loader_path", binary_dir))
@@ -60,10 +51,13 @@ def resolve_rpath(binary_path, rpath_lib):
                     expanded = os.path.normpath(rpath.replace("@executable_path", 
                         os.path.join(binary_dir, "..", "MacOS")))
                 
+                # Handle framework-relative paths
+                if "@rpath" in rpath_lib:
+                    framework_name = rpath_lib.split("/")[0]
+                    framework_path = os.path.join(binary_dir, "..", "Frameworks", framework_name)
+                    expanded = os.path.join(framework_path, "Versions", "Current", "lib")
+                
                 rpaths.append(expanded)
-        
-        # Add default app paths to search locations
-        rpaths += default_app_paths  # Critical addition
         
         # Search in resolved paths
         for rpath in rpaths:
@@ -92,7 +86,6 @@ def resolve_library_path(lib_path, binary_path=None):
 
         # Search common locations with version flexibility
         lib_name_base = os.path.basename(lib_path).split('.dylib', 1)[0]
-        version_pattern = re.compile(rf'^{re.escape(lib_name_base)}(\.\d+)*\.dylib$')  # Handles multi-part versions
         search_paths = [
             "/opt/homebrew/lib",  # Already present
             "/opt/homebrew/opt/*/lib",  # Add wildcard to cover all Homebrew formulae
@@ -104,8 +97,7 @@ def resolve_library_path(lib_path, binary_path=None):
             "/opt/local/lib",
             "/usr/lib", 
             "/Library/Frameworks",
-            os.path.join(os.path.dirname(binary_path), "..", "lib") if binary_path else None,
-            os.path.join(os.path.dirname(binary_path), "..", "Frameworks") if binary_path else None
+            os.path.join(os.path.dirname(binary_path), "..", "lib") if binary_path else None
         ]
         
         # Regex pattern for versioned libraries
@@ -299,53 +291,13 @@ def process_binary(binary_path, app_bundle_path):
             logging.info(f"No non-system dependencies found for {binary_path}")
             return
         
-        # Process dependencies first
         for lib_path in dependencies:
             copied_path = copy_dependency(lib_path, app_bundle_path, binary_path)
             if copied_path and copied_path != binary_path:
                 process_binary(copied_path, app_bundle_path)
         
-        # Add RPATHs to help resolve @rpath references
-        needed_rpaths = [
-            "@executable_path/../Resources/lib",
-            "@executable_path/../Frameworks"
-        ]
-        
-        for rpath in needed_rpaths:
-            try:
-                subprocess.run([
-                    "install_name_tool",
-                    "-add_rpath",
-                    rpath,
-                    binary_path
-                ], check=True)
-                logging.info(f"Added RPATH {rpath} to {binary_path}")
-            except subprocess.CalledProcessError as e:
-                if "would duplicate path, file already has LC_RPATH" in e.output:
-                    logging.debug(f"RPATH {rpath} already exists in {binary_path}")
-                else:
-                    logging.warning(f"Failed to add RPATH {rpath} to {binary_path}: {e}")
-        
-        # Update library paths in the binary
         update_library_paths(binary_path, dependencies, app_bundle_path)
         
-        # Handle version symlinks for MLT and similar libraries
-        if "libmlt" in binary_path:
-            lib_dir = os.path.join(app_bundle_path, "Contents", "Resources", "lib")
-            base_name = os.path.basename(binary_path).split(".", 1)[0]
-            major_version = base_name.split("-")[-1].rsplit(".", 1)[0]  # Extract 7.7 from libmlt++-7.7.30.0.dylib
-            
-            # Create version symlink if needed (e.g. libmlt++-7.7.dylib -> libmlt++-7.7.30.0.dylib)
-            symlink_name = f"{base_name.split('-')[0]}-{major_version}.dylib"
-            symlink_path = os.path.join(lib_dir, symlink_name)
-            if not os.path.exists(symlink_path):
-                try:
-                    os.symlink(os.path.basename(binary_path), symlink_path)
-                    logging.info(f"Created version symlink: {symlink_name} -> {os.path.basename(binary_path)}")
-                except Exception as e:
-                    logging.error(f"Failed to create version symlink: {e}")
-        
-        # Update library ID if needed
         if "Contents/Frameworks" in binary_path or "Contents/Resources" in binary_path:
             update_library_id(binary_path)
             
