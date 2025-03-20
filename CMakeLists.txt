@@ -3,7 +3,7 @@
 ##
 
 set(STUDIO_VERSION "${STUDIO_VERSION_MAJOR}.${STUDIO_VERSION_MINOR}.${STUDIO_VERSION_PATCH}")
-set(SHOW_EXTRA_INFO OFF) # this needs some fixes to work
+set(SHOW_EXTRA_INFO OFF)
 set(DATA_PREFIX "${CMAKE_INSTALL_PREFIX}" CACHE PATH "Path, where the share directory with the pixmaps, sounds, plugins and translations is located. Default: Prefix, where Synfig Studio is going to be installed")
 set(IMG_EXT "png" CACHE STRING "File extension of the pixmaps (without the \".\"). Default: png")
 
@@ -113,6 +113,20 @@ target_link_libraries(synfigstudio PRIVATE
 	PkgConfig::XMLPP
 	libsynfig
 	synfigapp
+)
+# Ensure the target links with correct RPATH
+set_target_properties(synfigstudio PROPERTIES
+  INSTALL_RPATH "@executable_path/../Resources/lib"
+  BUILD_WITH_INSTALL_RPATH TRUE
+  MACOSX_RPATH ON
+)
+
+# Copy required libraries into the app bundle's Resources/lib directory
+add_custom_command(TARGET synfigstudio POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_BUNDLE_DIR:synfigstudio>/Contents/Resources/lib"
+  COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:libsynfig> "$<TARGET_BUNDLE_DIR:synfigstudio>/Contents/Resources/lib"
+  COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:synfigapp> "$<TARGET_BUNDLE_DIR:synfigstudio>/Contents/Resources/lib"
+  COMMENT "Copying libraries into app bundle"
 )
 
 if (FONTCONFIG_FOUND)
