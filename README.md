@@ -1,5 +1,13 @@
 # Synfig-macOS-app-bundle-project
 
+## Status:
+✅ Dependencies Collection Script (dependency_collection_4.py)
+✅ Signing Script (code_signing_1.py)
+✅ Setup macOS environment from synfig/synfigstudio apps (CMakeLists.txt)
+🔄 Cpack support to build installer on macOS
+🔄 Python and lxml packaging to .app(with signing)
+🔄 Interface/menu improvements for more native macOS support
+
 ## Overview:
 A repository to showcase my work on the project idea: MacOS app bundle of Synfig for Google Summer of Code 2025
 
