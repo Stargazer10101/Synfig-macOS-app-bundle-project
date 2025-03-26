@@ -59,6 +59,9 @@ The script may run for several minutes and the dependencies will be copied to /C
 
 ![copied_dependencies](Images/files_creation_1.png)
 
+### Removing the launcher script from repository:
+rm -f autobuild/osx/app-template/Contents/MacOS/synfigstudio.sh
+rm -f autobuild/osx/synfig_osx_launcher.cpp
 
 ## Contributing
 Contributions are welcome! Please open an issue or submit a pull request.
