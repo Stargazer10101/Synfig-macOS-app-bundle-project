@@ -96,9 +96,6 @@ def sign_file(file_path, signing_identity, entitlements=None):
         file_path (str): Path to the file to sign
         signing_identity (str): Code signing identity (e.g., 'Developer ID Application: Name (ID)')
         entitlements (str, optional): Path to entitlements plist file
-    
-    Raises:
-        subprocess.CalledProcessError: If the signing process fails
     """
     cmd = [
         "codesign",
@@ -127,33 +124,28 @@ def sign_app_bundle(app_bundle_path, signing_identity, entitlements=None):
     Sign an entire macOS application bundle, including all contained binaries.
     
     The signing follows Apple's recommended order:
-    1. Sign embedded components first (inside-out approach)
-    2. Sign the main bundle last
+    1. Sign embedded components first (reverse-order approach)
+    2. Sign the main bundle at the end
     
-    Args:
-        app_bundle_path (str): Path to the .app bundle
-        signing_identity (str): Code signing identity 
-        entitlements (str, optional): Path to entitlements plist file
     """
     setup_logging()
     
     # Step 1: Find all binary files that need signing
     signable_files = find_signable_files(app_bundle_path)
     
-    # Step 2: Sort files to sign in the correct order (inside-out approach):
+    # Step 2: Sort files to sign in the correct order.
     # - Sort by path depth (deeper paths first)
-    # - Sort by type (.app bundles last)
+    # - Sort by type (.app bundle last)
     signable_files.sort(
         key=lambda x: (os.path.dirname(x).count("/"), x.endswith(".app")),
         reverse=True  # Deepest files first
     )
-    
-    # Step 3: Sign each individual file (except for .app bundles)
+    # Step 3: Sign each individual file (except for .app bundle)
     for file in signable_files:
-        if not file.endswith(".app"):  # We'll sign .app bundles separately
+        if not file.endswith(".app"):  # .app bundle will be signed separately
             sign_file(file, signing_identity, entitlements)
     
-    # Step 4: Sign the main app bundle itself (this should be the last step)
+    # Step 4: Sign the main app bundle
     sign_file(app_bundle_path, signing_identity, entitlements)
     
     # Step 5: Verify that everything was signed correctly
@@ -166,12 +158,6 @@ def verify_signature(app_bundle_path):
     This performs two checks:
     1. codesign verification - checks the signature validity
     2. spctl assessment - checks if the app meets the requirements to run
-    
-    Args:
-        app_bundle_path (str): Path to the .app bundle
-        
-    Raises:
-        subprocess.CalledProcessError: If verification fails
     """
     try:
         # Verify code signature details with strict checking
@@ -187,7 +173,7 @@ def verify_signature(app_bundle_path):
         logging.info("Code signing verification passed!")
     except subprocess.CalledProcessError as e:
         logging.error(f"Code signing verification failed: {e}")
-        raise  # Re-raise to be handled by the caller
+        raise  
 
 if __name__ == "__main__":
     # This section executes when the script is run directly (not imported)
