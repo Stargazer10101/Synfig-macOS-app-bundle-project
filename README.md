@@ -9,7 +9,7 @@
 🔄 Interface/menu improvements for more native macOS support  
 
 ## Overview:
-A repository to showcase my work on the project idea: MacOS app bundle of Synfig for Google Summer of Code 2025
+A repository to showcase my work on the project idea: MacOS app bundle of Synfig
 
 ## Phases
 The projects will be completed in parts starting with (but not limited to) the following implementations:
